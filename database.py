@@ -26,16 +26,14 @@ try:
 
     # Creating expense table, if it doesn't exist
     cursor.execute('''CREATE TABLE IF NOT EXISTS expenses(id INTEGER PRIMARY 
-                   KEY, category_number INTEGER, price INTEGER,
-                   recurring_cost BOOLEAN DEFAULT 0) ''')
+                   KEY, category_number INTEGER, price INTEGER) ''')
     db.commit()
     cursor = db.cursor()
     print("The expense table was made")
 
     # Creating income table, if it doesn't exist
     cursor.execute('''CREATE TABLE IF NOT EXISTS income(id INTEGER PRIMARY KEY,
-                   category_number INTEGER, amount INTEGER, recurring_cost 
-                   BOOLEAN DEFAULT 0) ''')
+                   category_number INTEGER, amount INTEGER) ''')
     db.commit()
     cursor = db.cursor()
     print("The income table was created")
