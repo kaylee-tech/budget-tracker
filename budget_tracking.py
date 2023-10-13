@@ -158,10 +158,35 @@ def display_expenses():
     cursor = db.cursor()
     cursor.execute('''SELECT id, category_number, price FROM expenses ''')
     # Displaying data out line by lie
-    num_counter = 0
     for row in cursor:
         print('{0}\t{1}\t\t\t{2}'.format(row[0],row[1],row[2]))
+        
+
+# Displays expenses if they fall into the selected category
+def display_some_expenses(category_num):
+    """
+    Displays some of the expenses from the expenses table if they fall under 
+    the user selected category
+
+    :param int category_num: The user selected category
+    """
+    print("list of expenses")
+    str_expenses = "ID\tCategory_number\t\tPrice\n"
+    # Reading in data from database
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, price FROM expenses 
+                             WHERE category_number = ? ''', (category_num,))
+    num_counter = 0
+    for row in cursor:
+        str_expenses += ('{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2]))
         num_counter += 1
+    db.commit()
+    db.close()
+    if num_counter == 0:
+        print("There are no expenses under this category\n")
+    else:
+        print(str_expenses)
 
 
 # Adding expenses to the expense table
@@ -276,8 +301,23 @@ while True:
 
     # Allows user to select what expenses they want to view
     elif menu == 3:
-        pass
-    
+        # Selecting the category
+        print("\nWhich category do you want to view you expenses from?")
+        s1 = """Select the number of the category\n"""
+        menu_cate = value_err(f'''{s1}{display_categories()}: ''')
+         # Making sure user selected an existing option
+        user_bool = False
+        options_list = category_number_list()
+        while(user_bool == False):
+            if(menu_cate in options_list):
+                user_bool = True
+            else:
+                print("\nPlease only select a number from the options")
+                menu_cate = value_err(f'''{s1}{display_categories()}: ''')
+
+        print("")       
+        display_some_expenses(menu_cate)
+
     # Allows user to add or update their income
     elif menu == 4:
         pass
@@ -294,11 +334,11 @@ while True:
     elif menu == 7:
         pass
 
-    # Allows user to see their bidget for a selected category
+    # Allows user to see their budget for a selected category
     elif menu == 8:
         pass
 
-    # Allows user to set or update finacial goals 
+    # Allows user to set finacial goals 
     elif menu == 9:
         pass
 
