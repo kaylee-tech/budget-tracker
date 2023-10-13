@@ -145,21 +145,27 @@ def pulling_expenses():
     return id_list, category_num_list, price_list
 
 
-# Displays all the titles of the book
+# Displays all the expenses from the expenses table
 def display_expenses():
     """
     Displays all the expenses from the expenses table
     """
     print("list of expenses")
-    print("ID\tCategory_number\t\tPrice")
+    str_expenses = "ID\tCategory_number\t\tPrice\n"
 
     # Reading in information from Database
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
     cursor.execute('''SELECT id, category_number, price FROM expenses ''')
     # Displaying data out line by lie
+    num_counter = 0
     for row in cursor:
-        print('{0}\t{1}\t\t\t{2}'.format(row[0],row[1],row[2]))
+        str_expenses = '{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2])
+        num_counter += 1
+    if num_counter == 0:
+        print("There are no expenses in the table right now\n")
+    else:
+        print(str_expenses)
         
 
 # Displays expenses if they fall into the selected category
@@ -204,6 +210,108 @@ def add_expense(id, category_number, price):
                    VALUES(?,?,?)''', (id, category_number, price))
     db.commit()
     print("Expense has been added to the database\n")
+    db.close()
+
+
+# Organises data from database into seperate lists
+def pulling_income():
+    """
+    Pulling all the data from the income table and putting the data in 
+    seperate appropriate lists
+
+    :returns: All the incomes' ids
+    :rtype: list
+
+    :returns: All the incomes' category numbers
+    :rtype: list
+
+    :returns: All the incomes' amounts
+    :rtype: list
+    """
+    # empty lists to put data in them
+    id_list = []
+    category_num_list = []
+    amount_list = []
+
+    # Reading in information from Database
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, amount FROM income ''')
+    # Putting data in appropriate lists
+    for row in cursor:
+        id_list.append(row[0])
+        category_num_list.append(row[1])
+        amount_list.append(row[2])
+    db.commit()
+    db.close()   
+    return id_list, category_num_list, amount_list
+
+
+# Displays all the titles of the book
+def display_income():
+    """
+    Displays all the income records from the income table
+    """
+    print("list of incomes")
+    str_income ="ID\tCategory_number\t\tamount\n"
+
+    # Reading in information from Database
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, amount FROM income ''')
+    # Displaying data out line by lie
+    num_counter = 0
+    for row in cursor:
+        str_income += '{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2])
+        num_counter += 1
+    if num_counter == 0:
+        print("There is no income in this table\n")
+    else:
+        print(str_income)
+
+
+# Displays incomes if they fall into the selected category
+def display_some_incomes(category_num):
+    """
+    Displays some of the incomes from the income table if they fall under 
+    the user selected category
+
+    :param int category_num: The user selected category
+    """
+    print("list of incomes")
+    str_income = "ID\tCategory_number\t\tamount\n"
+    # Reading in data from database
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, amount FROM income 
+                             WHERE category_number = ? ''', (category_num,))
+    num_counter = 0
+    for row in cursor:
+        str_income += '{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2])
+        num_counter += 1
+    db.commit()
+    db.close()
+    if num_counter == 0:
+        print("There is no income under this category\n")
+    else:
+        print(str_income)
+
+
+# Adding income to the income table
+def add_income(id, category_number, amount):
+    """
+    Adds the new income to the income table in the database
+
+    :param int id: The unique identify ID 
+    :param int category_number: The category number
+    :param int amount: The cost of the new incoe
+    """
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''INSERT INTO income(id, category_number, amount)
+                   VALUES(?,?,?)''', (id, category_number, amount))
+    db.commit()
+    print("income has been added to the database\n")
     db.close()
 
 
@@ -288,7 +396,7 @@ while True:
 
             # Adding expense to expenses table
             category_list = pull_categories()
-            print(f"Adding an expense to the {category_list[id_category-1]}")
+            print(f"Adding an expense for {category_list[id_category-1]}")
             id_list, category_num_list, price_list = pulling_expenses()
             id = len(id_list) + 1
             price = value_err("Please enter how much it costs: ")
@@ -302,7 +410,7 @@ while True:
     # Allows user to select what expenses they want to view
     elif menu == 3:
         # Selecting the category
-        print("\nWhich category do you want to view you expenses from?")
+        print("\nWhich category do you want to view your expenses from?")
         s1 = """Select the number of the category\n"""
         menu_cate = value_err(f'''{s1}{display_categories()}: ''')
          # Making sure user selected an existing option
@@ -318,17 +426,97 @@ while True:
         print("")       
         display_some_expenses(menu_cate)
 
-    # Allows user to add or update their income
+    # Allows user to add their income
     elif menu == 4:
-        pass
-    
+        print("Exising Categories")
+        print(display_categories())
+
+        # Seeing if the user wants to add a new category or use existing one
+        menu_4_bool = False
+        while menu_4_bool == False:
+            menu_for_4 = value_err('''Select one of the following options
+                                1. Add income with an existing category
+                                2. Add income with a new category
+                                : ''')
+            if menu_for_4 == 1 or menu_for_4 == 2:
+                menu_4_bool = True
+            
+            else:
+                print("\nPlease only enter 1 or 2")
+
+        # Adding income with existing category       
+        if menu_for_4 == 1:
+            print("")
+            print("Which Category do you want to add your income to?")
+            s1 = """Select the number of the category\n"""
+            menu_cate = value_err(f'''{s1}{display_categories()}: ''')
+
+            # Making sure user selected an existing option
+            user_bool = False
+            options_list = category_number_list()
+            while(user_bool == False):
+                if(menu_cate in options_list):
+                    user_bool = True
+                else:
+                    print("\nPlease only select a number from the options")
+                    menu_cate = value_err(f'''{s1}{display_categories()}: ''')
+
+            # Getting info from user to add to database
+            category_list = pull_categories()
+            cate_obj = category_list[menu_cate-1]
+            print(f"\nAdding an income from {cate_obj}")
+            amount = value_err(f"Please enter how you earn from {cate_obj}: ")
+            id_list, category_num_list, amount_list = pulling_income()
+            id = len(id_list) + 1
+            # Adding income to income table
+            add_income(id, menu_cate, amount)
+
+        # Adding new Category to category table & income to income table
+        elif menu_for_4 == 2:
+            print("\nCreating a new income category")
+            category_list = pull_categories()
+            new_category = input("Enter the name of the new category: ")
+
+            # Making sure the category doesnt already exist
+            while(category_exists(new_category, category_list) == True):
+                print("\nPlease enter a name that does not already exist")
+                new_category = input("Enter the name of the new category: ")
+            
+            # Adding the category to the Category Table
+            id_category = len(category_list) + 1
+            add_category(id_category, new_category)
+
+            # Adding income to income table
+            category_list = pull_categories()
+            cate_obj = category_list[id_category-1]
+            print(f"Adding an income from {cate_obj}")
+            id_list, category_num_list, amount_list = pulling_income()
+            id = len(id_list) + 1
+            amount = value_err(f"Please enter how you earn from {cate_obj}: ")
+            add_income(id, id_category, amount)
+
     # Allows user to view their income from a selected category
     elif menu == 5:
-        pass
+        display_income()
 
-    # Sets a budget for a specific category
+    # Allows user to select what incomes they want to view
     elif menu == 6:
-        pass
+        # Selecting the category
+        print("\nWhich category do you want to view your income from?")
+        s1 = """Select the number of the category\n"""
+        menu_cate = value_err(f'''{s1}{display_categories()}: ''')
+         # Making sure user selected an existing option
+        user_bool = False
+        options_list = category_number_list()
+        while(user_bool == False):
+            if(menu_cate in options_list):
+                user_bool = True
+            else:
+                print("\nPlease only select a number from the options")
+                menu_cate = value_err(f'''{s1}{display_categories()}: ''')
+
+        print("")       
+        display_some_incomes(menu_cate)
 
     # Set their budget for a selected category
     elif menu == 7:
