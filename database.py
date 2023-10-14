@@ -39,9 +39,9 @@ try:
     print("The income table was created")
 
     # Creating budget table, if it doesn't exist
-    cursor.execute('''CREATE TABLE IF NOT EXISTS budget(id INTEGER PRIMARY KEY,
-                    category_number INTEGER, expenses_budget INTEGER, 
-                    actual_expenses INTEGER, budget_exceeded BOOLEAN DEFAULT 0)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS budget(id INTEGER,
+                    category_number INTEGER, expenses_budget INTEGER,  
+                   PRIMARY KEY(id, category_number))
                     ''')
     db.commit()
     cursor = db.cursor()
@@ -50,7 +50,7 @@ try:
     # Creating financial goals table, if it doesn't exist
     cursor.execute('''CREATE TABLE IF NOT EXISTS goals(id INTEGER,
                     date_set DATE, what_is_goal Text, progress INTEGER,
-                    goal_met BOOLEAN DEFAULT 0)
+                    goal_met TEXT)
                     ''')
     db.commit()
     cursor = db.cursor()
