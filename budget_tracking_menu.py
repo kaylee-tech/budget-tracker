@@ -256,7 +256,7 @@ while True:
 
             # Getting info from user to add to database
             category_list = pull_categories()
-            print(f"\nAdding an budget for {category_list[menu_cate-1]}")
+            print(f"\nAdding a budget for {category_list[menu_cate-1]}")
             budget = value_err("Please enter what the limit should be: ")
             id_l, cate_num_l, bud_limit = pulling_budgets()
             id = len(id_l) + 1
@@ -315,11 +315,106 @@ while True:
 
     # Allows user to set finacial goals 
     elif menu == 10:
-        pass
+        print(display_goals())
+
+        id_list, goal_category, amount_profit = pulling_goals()
+        options_list = category_number_list()
+        space_for_new_bud = True
+        if len(id_list) == len(options_list):
+            space_for_new_bud = False
+
+        # Seeing if the user wants to add to a new category or use existing one
+        menu_10_bool = False
+        while menu_10_bool == False:
+            if(space_for_new_bud == True):
+                menu_for_10 = value_err('''Select one of the following options
+                                1. Set financial goals for a category
+                                2. Update financial goals for a category
+                                : ''')
+            else:
+                menu_for_10 = value_err('''Select one of the following options
+                            1. Option not available because all goals exist
+                            2. Update financial goals for a category
+                            : ''')
+            if menu_for_10 == 1 and space_for_new_bud == True:
+                menu_10_bool = True
+            
+            elif menu_for_10 == 2:
+                menu_10_bool = True
+            
+            else:
+                print("\nPlease only enter 1 or 2") 
+            
+        # Adding financial goals for a category
+        if menu_for_10 == 1:
+            print("")
+            print("Which Category do you want to add financial goals for?")
+            s1 = """Select the number of the category\n"""
+            menu_cate = value_err(f'''{s1}{display_empty_goals()}: ''')
+
+            # Making sure user selected an existing option
+            user_bool = False
+            options_list = empty_goals_number_list()
+            while(user_bool == False):
+                # Checking that the category exists
+                if(menu_cate in options_list):
+                    user_bool = True
+                else:
+                    print("\nPlease only select a number from the options")
+                    menu_cate = value_err(f'''{s1}{display_empty_goals()}: ''')
+
+            # Getting info from user to add to database
+            category_list = pull_categories()
+            cate_type = category_list[menu_cate-1]
+            print(f"\nAdding a goal for {cate_type}")
+            sentence = f"""What difference do you want between the budget 
+            and actual expenses for {cate_type}: """
+            amount = value_err(sentence)
+            id_l, cate_num_l, bud_limit = pulling_goals()
+            id = len(id_l) + 1
+
+            # Adding budget to budget table
+            add_goal(id, menu_cate, amount)
+
+        # Updating budget for a category
+        if menu_for_10 == 2:
+            id_list, cate_num, amount_profit = pulling_goals()
+
+            # Checking to see if anything can be updated
+            if len(id_list) == 0:
+                print("Can't update anything - There is nothing to update\n")
+            else:
+                print("\nWhich goal do you want to update?")
+                s1 = """Select the Id of the category\n"""
+                menu_cate = value_err(f'''{s1}{display_goals()}: ''')
+
+                # Making sure user selected an existing option
+                user_bool = False
+                while(user_bool == False):
+                    if(menu_cate in id_list):
+                        user_bool = True
+                    else:
+                        print("\nPlease only select a number from the options")
+                        menu_cate = value_err(f'''{s1}{display_goals()}: ''')
+                print("") 
+
+                # Updating a financial goal record
+                new_amount = value_err("""Enter new amount of the difference
+                                   between the budget and actual expenses: """)
+                update_goal(menu_cate, new_amount) 
 
     # Allows user to view their progress towords their finacial goals
     elif menu == 11:
-        pass
+        category_list = pull_categories()
+        id_list, goal_category, amount_profit = pulling_goals()
+        id_list, bud_category, budget_amount = pulling_budgets()
+        if(len(category_list) == len(goal_category) == len(bud_category)):
+            print("All your categories have budgets and financial goals")
+        else:
+            print("""To see all your financial goals' progress please enter all
+                  your budgets and goals for each category""")
+            
+        display_goals_progress()
 
     # Exits the program
     elif menu == 12:
