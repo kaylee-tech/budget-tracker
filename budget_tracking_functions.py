@@ -29,33 +29,22 @@ def pull_categories():
 
     :returns: All the categories listed
     :rtype: list
+
+    :returns: All the categories numbers
+    :rtype: list
     """
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
     category_list = []
-    cursor.execute('''SELECT category FROM category ''')
+    category_number_list = []
+    cursor.execute('''SELECT category_number, category FROM category
+                   ORDER BY category_number''')
     for row in cursor:
-        category_list += row
+        category_list.append(row[1])
+        category_number_list.append(row[0])
+    db.commit()
     db.close()
-    return category_list
-
-
-# Creating a list of numbers that correspond with how many categories there are
-def category_number_list():
-    """
-    Pulls the data out of the category table and counts it from 1 and puts the 
-    numbers in a list
-
-    :returns: consecutive numbers
-    :rtype: list
-    """
-    category_list = pull_categories()
-    num_list = []
-    num = 1
-    while(len(category_list) >= num):
-        num_list.append(num)
-        num += 1
-    return num_list
+    return category_list, category_number_list
 
 
 # displaying the different categories
@@ -66,11 +55,11 @@ def display_categories():
     :returns: A numbered string of all the categories
     :rtype: String
     """
-    category_list = pull_categories()
+    category_list, category_num_list = pull_categories()
     num = 0
     str_list = """Num\tCategories\n"""
     while(len(category_list)>num):
-        str_list += (str(num+1) + "\t" + category_list[num] +"\n")
+        str_list += (f"{category_num_list[num]}\t{category_list[num]}\n")
         num += 1
     return str_list
 
@@ -418,8 +407,8 @@ def display_empty_budgets():
     Displays the categories that have no budget from the budget table 
     """
     id_list, budget_category, budget_cost = pulling_budgets()
-    options_list = category_number_list()
-    category_list = pull_categories()
+    cate, options_list = pull_categories()
+    category_list, num_list = pull_categories()
     space_for_new_bud = True
     if len(id_list) == len(options_list):
         space_for_new_bud = False
@@ -458,7 +447,7 @@ def empty_budget_number_list():
     :rtype: list
     """
     id_list, budget_category, budget_cost = pulling_budgets()
-    options_list = category_number_list()
+    cate, options_list = pull_categories()
     num_list = []
 
     num_count = 0
@@ -574,8 +563,7 @@ def display_empty_goals():
     Displays the categories that have no financial goals from the goals table 
     """
     id_list, goal_category, amount_profit = pulling_goals()
-    options_list = category_number_list()
-    category_list = pull_categories()
+    cate, options_list = pull_categories()
     space_for_new_bud = True
     if len(id_list) == len(options_list):
         space_for_new_bud = False
@@ -593,7 +581,7 @@ def display_empty_goals():
                 pass
             else: 
                 num_bud = str(num_count+1)
-                str_bud += (f"{num_bud}\t{category_list[num_count]}\n")
+                str_bud += (f"{num_bud}\t{cate[num_count]}\n")
                 num_checker += 1   
             num_count += 1
     # Results
@@ -614,7 +602,7 @@ def empty_goals_number_list():
     :rtype: list
     """
     id_list, goals_category, amount_profit = pulling_goals()
-    options_list = category_number_list()
+    cate, options_list = pull_categories()
     num_list = []
 
     num_count = 0
@@ -674,12 +662,12 @@ def display_goals_progress():
     str_bud =f"ID\t{st1}\t\t{st2}\t\t{st3}\n"
     
     # Checking that an expense, budget and goal exists for that category
-    category_list = pull_categories()
+    cate, num_list = pull_categories()
 
     num_counter = 0
     num_checker = 1
     num_progress_exists = 0
-    while(len(category_list > num_counter)):
+    while(len(cate) > num_counter):
         if(get_budget(num_checker)>0 and get_expense(num_checker)>0 and 
            get_goal_amount(num_checker)>0):
             
@@ -749,4 +737,4 @@ def get_budget(category):
         budget_amount += row[2]
     db.commit()
     db.close()   
-    return budget_amount()
+    return budget_amount

@@ -48,7 +48,7 @@ while True:
 
             # Making sure user selected an existing option
             user_bool = False
-            options_list = category_number_list()
+            category, options_list = pull_categories()
             while(user_bool == False):
                 if(menu_cate in options_list):
                     user_bool = True
@@ -57,7 +57,7 @@ while True:
                     menu_cate = value_err(f'''{s1}{display_categories()}: ''')
 
             # Getting info from user to add to database
-            category_list = pull_categories()
+            category_list, num_list = pull_categories()
             print(f"\nAdding an expense to the {category_list[menu_cate-1]}")
             price = value_err("Please enter how much it costs: ")
             id_list, category_num_list, price_list = pulling_expenses()
@@ -68,7 +68,7 @@ while True:
         # Adding new Category to category table & expense to expanses table
         elif menu_for_1 == 2:
             print("\nCreating a new expense category")
-            category_list = pull_categories()
+            category_list, num_list = pull_categories()
             new_category = input("Enter the name of the new category: ")
 
             # Making sure the category doesnt already exist
@@ -81,7 +81,7 @@ while True:
             add_category(id_category, new_category)
 
             # Adding expense to expenses table
-            category_list = pull_categories()
+            category_list, num_list = pull_categories()
             print(f"Adding an expense for {category_list[id_category-1]}")
             id_list, category_num_list, price_list = pulling_expenses()
             id = len(id_list) + 1
@@ -101,7 +101,7 @@ while True:
         menu_cate = value_err(f'''{s1}{display_categories()}: ''')
          # Making sure user selected an existing option
         user_bool = False
-        options_list = category_number_list()
+        cate, options_list = pull_categories()
         while(user_bool == False):
             if(menu_cate in options_list):
                 user_bool = True
@@ -139,7 +139,7 @@ while True:
 
             # Making sure user selected an existing option
             user_bool = False
-            options_list = category_number_list()
+            cate, options_list = pull_categories()
             while(user_bool == False):
                 if(menu_cate in options_list):
                     user_bool = True
@@ -148,7 +148,7 @@ while True:
                     menu_cate = value_err(f'''{s1}{display_categories()}: ''')
 
             # Getting info from user to add to database
-            category_list = pull_categories()
+            category_list, num_list = pull_categories()
             cate_obj = category_list[menu_cate-1]
             print(f"\nAdding an income from {cate_obj}")
             amount = value_err(f"Please enter how you earn from {cate_obj}: ")
@@ -160,7 +160,7 @@ while True:
         # Adding new Category to category table & income to income table
         elif menu_for_4 == 2:
             print("\nCreating a new income category")
-            category_list = pull_categories()
+            category_list, num_list = pull_categories()
             new_category = input("Enter the name of the new category: ")
 
             # Making sure the category doesnt already exist
@@ -173,7 +173,7 @@ while True:
             add_category(id_category, new_category)
 
             # Adding income to income table
-            category_list = pull_categories()
+            category_list, num_list = pull_categories()
             cate_obj = category_list[id_category-1]
             print(f"Adding an income from {cate_obj}")
             id_list, category_num_list, amount_list = pulling_income()
@@ -193,7 +193,7 @@ while True:
         menu_cate = value_err(f'''{s1}{display_categories()}: ''')
         # Making sure user selected an existing option
         user_bool = False
-        options_list = category_number_list()
+        cate, options_list = pull_categories()
         while(user_bool == False):
             if(menu_cate in options_list):
                 user_bool = True
@@ -209,7 +209,7 @@ while True:
         print(display_budgets())
 
         id_list, budget_category, budget_cost = pulling_budgets()
-        options_list = category_number_list()
+        cate, options_list = pull_categories()
         space_for_new_bud = True
         if len(id_list) == len(options_list):
             space_for_new_bud = False
@@ -255,7 +255,7 @@ while True:
                     menu_cate = value_err(f'''{s1}{display_empty_budgets()}: ''')
 
             # Getting info from user to add to database
-            category_list = pull_categories()
+            category_list, num_list = pull_categories()
             print(f"\nAdding a budget for {category_list[menu_cate-1]}")
             budget = value_err("Please enter what the limit should be: ")
             id_l, cate_num_l, bud_limit = pulling_budgets()
@@ -302,7 +302,7 @@ while True:
         menu_cate = value_err(f'''{s1}{display_categories()}: ''')
          # Making sure user selected an existing option
         user_bool = False
-        options_list = category_number_list()
+        cate, options_list = pull_categories()
         while(user_bool == False):
             if(menu_cate in options_list):
                 user_bool = True
@@ -318,7 +318,7 @@ while True:
         print(display_goals())
 
         id_list, goal_category, amount_profit = pulling_goals()
-        options_list = category_number_list()
+        cate, options_list = pull_categories()
         space_for_new_bud = True
         if len(id_list) == len(options_list):
             space_for_new_bud = False
@@ -364,7 +364,7 @@ while True:
                     menu_cate = value_err(f'''{s1}{display_empty_goals()}: ''')
 
             # Getting info from user to add to database
-            category_list = pull_categories()
+            category_list, num_list = pull_categories()
             cate_type = category_list[menu_cate-1]
             print(f"\nAdding a goal for {cate_type}")
             sentence = f"""What difference do you want between the budget 
@@ -399,22 +399,23 @@ while True:
                 print("") 
 
                 # Updating a financial goal record
-                new_amount = value_err("""Enter new amount of the difference
-                                   between the budget and actual expenses: """)
+                print("Enter new amount of the difference between")
+                new_amount = value_err("the budget and actual expenses: ")
                 update_goal(menu_cate, new_amount) 
 
     # Allows user to view their progress towords their finacial goals
     elif menu == 11:
-        category_list = pull_categories()
+        category_list, num_list = pull_categories()
         id_list, goal_category, amount_profit = pulling_goals()
         id_list, bud_category, budget_amount = pulling_budgets()
         if(len(category_list) == len(goal_category) == len(bud_category)):
             print("All your categories have budgets and financial goals")
         else:
-            print("""To see all your financial goals' progress please enter all
-                  your budgets and goals for each category""")
+            print("To see all your financial goals' progress please enter all")
+            print("your budgets and goals for each category\n")
             
         display_goals_progress()
+        print("")
 
     # Exits the program
     elif menu == 12:
