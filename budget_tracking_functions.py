@@ -160,7 +160,7 @@ def display_expenses():
     # Displaying data out line by lie
     num_counter = 0
     for row in cursor:
-        str_expenses = '{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2])
+        str_expenses += '{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2])
         num_counter += 1
     if num_counter == 0:
         print("There are no expenses in the table right now\n")
@@ -354,7 +354,7 @@ def pulling_budgets():
     return id_list, category_num_list, bud_limit
 
 
-# Displays th budgets from the budget table
+# Displays the budgets from the budget table
 def display_budgets():
     """
     Displays all the budget records from the budget table
@@ -505,3 +505,248 @@ def update_budget(id, budget):
     print("budget has been updated in the database\n")
     db.close()
 
+
+# Organises data from database into seperate lists
+def pulling_goals():
+    """
+    Pulling all the data from the goals table and putting the data in 
+    seperate appropriate lists
+
+    :returns: All the goals' ids
+    :rtype: list
+
+    :returns: All the goals' category numbers
+    :rtype: list
+
+    :returns: All the goals profit amount' limits
+    :rtype: list
+    """
+    # empty lists to put data in them
+    id_list = []
+    category_num_list = []
+    amount_limit = []
+
+    # Reading in information from Database
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, amount FROM goals ''')
+    # Putting data in appropriate lists
+    for row in cursor:
+        id_list.append(row[0])
+        category_num_list.append(row[1])
+        amount_limit.append(row[2])
+    db.commit()
+    db.close()   
+    return id_list, category_num_list, amount_limit
+
+
+# Displays the financial goals from the goals table
+def display_goals():
+    """
+    Displays all the financial goal records from the goal table
+    """
+    print("list of financial goals")
+    st1 = "Category_number"
+    st2 = "Amount of profit"
+    str_bud =f"ID\t{st1}\t\t{st2}\n"
+
+    # Reading in information from Database
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, amount FROM goals ''')
+    # Displaying data out line by lie
+    num_counter = 0
+    for row in cursor:
+        str_bud += '{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2])
+        num_counter += 1
+    db.commit()
+    db.close() 
+    if num_counter == 0:
+        end_str = "There are no financial goal records in this table\n"
+        return end_str
+    else:
+        return str_bud
+
+
+# Displays the empty financial goals
+def display_empty_goals():
+    """
+    Displays the categories that have no financial goals from the goals table 
+    """
+    id_list, goal_category, amount_profit = pulling_goals()
+    options_list = category_number_list()
+    category_list = pull_categories()
+    space_for_new_bud = True
+    if len(id_list) == len(options_list):
+        space_for_new_bud = False
+
+    # Printing out list of empty goals categories
+    if(space_for_new_bud == True):
+        print("list of empty goals")
+        st1 = "Category_number"
+        str_bud =f"ID\t{st1}\n"
+
+        num_checker = 0
+        num_count = 0
+        while len(options_list) > num_count:
+            if options_list[num_count] in goal_category:
+                pass
+            else: 
+                num_bud = str(num_count+1)
+                str_bud += (f"{num_bud}\t{category_list[num_count]}\n")
+                num_checker += 1   
+            num_count += 1
+    # Results
+    if num_checker > 0:
+        return str_bud
+    else:
+        str_empty = "list of empty goals\nThere are no empty goals"
+        return str_empty
+    
+
+# Creating a list of numbers that correspond with how many categories there are
+def empty_goals_number_list():
+    """
+    Pulls the data out of the numbers corresponding with the category table and
+    records corresponding number of category not in goals table
+
+    :returns: numbers that represent categories not in the goals table
+    :rtype: list
+    """
+    id_list, goals_category, amount_profit = pulling_goals()
+    options_list = category_number_list()
+    num_list = []
+
+    num_count = 0
+    while len(options_list) > num_count:
+        if options_list[num_count] in goals_category:
+            pass
+        else:
+            num_list.append(num_count + 1)
+        num_count += 1
+    return num_list
+
+
+# Adding goal to the goals table
+def add_goal(id, category_number, amount_profit):
+    """
+    Adds the new goal to the goals table in the database
+
+    :param int id: The unique identify ID 
+    :param int category_number: The category number
+    :param int amount_profit: The amount profit from actual expense vs budget
+    """
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''INSERT INTO goals(id, category_number, amount) 
+                   VALUES(?,?,?)''', (id, category_number, amount_profit))
+    db.commit()
+    print("goal has been added to the database\n")
+    db.close()
+
+
+# Updating a financial goal record in the goals table
+def update_goal(id, amount_profit):
+    """
+    Updates a financial goals record of the goals table in the database
+
+    :param int id: The unique identify ID of financial goal getting updated
+    :param int amount_profit: The new amount of the updated amount_profit
+    """
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''UPDATE goals SET amount=? WHERE id=?''', 
+                   (amount_profit, id))
+    db.commit()
+    print("financial goal has been updated in the database\n")
+    db.close()
+
+
+# Displays the financial goals' progress from the goals table
+def display_goals_progress():
+    """
+    Displays all the financial goals' progress records from the goal table
+    """
+    print("list of financial goals progress")
+    st1 = "Category_number"
+    st2 = "Amount of profit wanted"
+    st3 = "Progress"
+    str_bud =f"ID\t{st1}\t\t{st2}\t\t{st3}\n"
+    
+    # Checking that an expense, budget and goal exists for that category
+    category_list = pull_categories()
+
+    num_counter = 0
+    num_checker = 1
+    num_progress_exists = 0
+    while(len(category_list > num_counter)):
+        if(get_budget(num_checker)>0 and get_expense(num_checker)>0 and 
+           get_goal_amount(num_checker)>0):
+            
+            # Getting difference between budget and expenses
+            prof = f"{get_goal_amount[num_checker]}"
+            prog_diff = get_budget[num_checker]-get_expense[num_checker]
+
+            # If the user is over budget and in negative not profit
+            if prog_diff < 0:
+                prog_diff = prog_diff * -1 
+                prog_diff = prog_diff + get_goal_amount(num_checker)
+                pro_int = get_goal_amount(num_checker)/prog_diff
+                pro_int = pro_int * 100
+            else:
+                pro_int = prog_diff/get_goal_amount(num_checker)
+                pro_int = pro_int * 100
+            pro = str(pro_int)
+            str_bud += f"{num_counter}\t{num_checker}\t\t\t{prof}\t\t\t{pro}"
+            num_progress_exists += 1
+
+        num_checker += 1
+        num_counter += 1
+
+    if num_progress_exists == 0:
+        print(f"{str_bud}There are no progress goals")
+    else:
+        print(str_bud)    
+
+
+# Gets expenses for a category
+def get_expense(category):
+    expense_price = 0
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, price FROM expenses
+                   WHERE category_number=? ''', (category,))
+    for row in cursor:
+        expense_price += row[2]
+    db.commit()
+    db.close()
+    return expense_price  
+
+
+# Gets goal amount for a category
+def get_goal_amount(category):
+    goal_amount = 0
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, amount FROM goals 
+                   WHERE category_number=? ''', (category,))
+    for row in cursor:
+        goal_amount += row[2]
+    db.commit()
+    db.close()
+    return goal_amount
+
+
+# Gets set budget amount for a category
+def get_budget(category):
+    budget_amount = 0
+    db = sqlite3.connect('budgets')
+    cursor = db.cursor()
+    cursor.execute('''SELECT id, category_number, expenses_budget FROM 
+                   budget WHERE category_number=? ''', (category,))
+    # Putting data in appropriate lists
+    for row in cursor:
+        budget_amount += row[2]
+    db.commit()
+    db.close()   
+    return budget_amount()

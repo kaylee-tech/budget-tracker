@@ -49,9 +49,8 @@ try:
 
     # Creating financial goals table, if it doesn't exist
     cursor.execute('''CREATE TABLE IF NOT EXISTS goals(id INTEGER,
-                    date_set DATE, what_is_goal Text, progress INTEGER,
-                    goal_met TEXT)
-                    ''')
+                    category_number INTEGER, amount INTEGER,
+                    PRIMARY KEY(id, category_number))''')
     db.commit()
     cursor = db.cursor()
     print("The financial goal table was created")
