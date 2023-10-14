@@ -145,7 +145,9 @@ def display_expenses():
     # Reading in information from Database
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
-    cursor.execute('''SELECT id, category_number, price FROM expenses ''')
+    cursor.execute('''SELECT id, category, price FROM expenses 
+                   INNER JOIN category ON 
+                   category.category_number = expenses.category_number''')
     # Displaying data out line by lie
     num_counter = 0
     for row in cursor:
@@ -172,8 +174,8 @@ def display_some_expenses(category_num):
     # Reading in data from database
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
-    cursor.execute('''SELECT id, category_number, price FROM expenses 
-                             WHERE category_number = ? ''', (category_num,))
+    cursor.execute('''SELECT id, category_number, price FROM expenses
+                   WHERE category_number = ? ''', (category_num,))
     num_counter = 0
     for row in cursor:
         str_expenses += ('{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2]))
@@ -249,7 +251,10 @@ def display_income():
     # Reading in information from Database
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
-    cursor.execute('''SELECT id, category_number, amount FROM income ''')
+    cursor.execute('''SELECT id, category, amount FROM income 
+                   INNER JOIN category ON 
+                   category.category_number = income.category_number''')
+
     # Displaying data out line by lie
     num_counter = 0
     for row in cursor:
@@ -277,7 +282,7 @@ def display_some_incomes(category_num):
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
     cursor.execute('''SELECT id, category_number, amount FROM income 
-                             WHERE category_number = ? ''', (category_num,))
+                            WHERE category_number = ? ''', (category_num,))
     num_counter = 0
     for row in cursor:
         str_income += '{0}\t{1}\t\t\t{2}\n'.format(row[0],row[1],row[2])
@@ -356,8 +361,9 @@ def display_budgets():
     # Reading in information from Database
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
-    cursor.execute('''SELECT id, category_number, expenses_budget
-                    FROM budget ''')
+    cursor.execute('''SELECT id, category, expenses_budget FROM budget 
+                   INNER JOIN category ON 
+                   category.category_number = budget.category_number''')
     # Displaying data out line by lie
     num_counter = 0
     for row in cursor:
@@ -387,7 +393,7 @@ def display_some_budgets(category_num):
     # Reading in data from database
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
-    cursor.execute('''SELECT id, category_number, expenses_budget FROM budget 
+    cursor.execute('''SELECT id, category_number, expenses_budget FROM budget
                    WHERE category_number = ? ''', (category_num,))
     num_counter = 0
     for row in cursor:
@@ -542,7 +548,9 @@ def display_goals():
     # Reading in information from Database
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
-    cursor.execute('''SELECT id, category_number, amount FROM goals ''')
+    cursor.execute('''SELECT id, category, amount FROM goals 
+                   INNER JOIN category ON 
+                   category.category_number = goals.category_number''')
     # Displaying data out line by lie
     num_counter = 0
     for row in cursor:
@@ -669,23 +677,23 @@ def display_goals_progress():
     num_progress_exists = 0
     while(len(cate) > num_counter):
         if(get_budget(num_checker)>0 and get_expense(num_checker)>0 and 
-           get_goal_amount(num_checker)>0):
+           get_goal_amount1(num_checker)>0):
             
             # Getting difference between budget and expenses
-            prof = f"{get_goal_amount[num_checker]}"
-            prog_diff = get_budget[num_checker]-get_expense[num_checker]
+            prof = get_goal_amount1(num_checker)
+            prog_diff = get_budget(num_checker)-get_expense(num_checker)
 
             # If the user is over budget and in negative not profit
             if prog_diff < 0:
                 prog_diff = prog_diff * -1 
-                prog_diff = prog_diff + get_goal_amount(num_checker)
-                pro_int = get_goal_amount(num_checker)/prog_diff
+                prog_diff = prog_diff + get_goal_amount1(num_checker)
+                pro_int = get_goal_amount1(num_checker)/prog_diff
                 pro_int = pro_int * 100
             else:
-                pro_int = prog_diff/get_goal_amount(num_checker)
+                pro_int = prog_diff/get_goal_amount1(num_checker)
                 pro_int = pro_int * 100
             pro = str(pro_int)
-            str_bud += f"{num_counter}\t{num_checker}\t\t\t{prof}\t\t\t{pro}"
+            str_bud += f"{num_counter}\t{num_checker}\t\t\t{prof}\t\t\t\t{pro}"
             num_progress_exists += 1
 
         num_checker += 1
@@ -712,14 +720,14 @@ def get_expense(category):
 
 
 # Gets goal amount for a category
-def get_goal_amount(category):
+def get_goal_amount1(category):
     goal_amount = 0
     db = sqlite3.connect('budgets')
     cursor = db.cursor()
-    cursor.execute('''SELECT id, category_number, amount FROM goals 
+    cursor.execute('''SELECT amount FROM goals 
                    WHERE category_number=? ''', (category,))
     for row in cursor:
-        goal_amount += row[2]
+        goal_amount += row[0]
     db.commit()
     db.close()
     return goal_amount
